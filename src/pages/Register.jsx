@@ -43,14 +43,14 @@ export default function Register() {
     }
     else {
       createUserWithEmailAndPassword(auth, email, password)
-        .then(function (res) {
+        .then( (res) => {
           userid = res.user.uid
           setDoc(doc(db, "user", userid), {
             username: username
           })
           navigate('/')
-        }).catch(function (error) {
-          console.log(error)
+        }).catch( (error) => {
+          setError('email have use')
         });
     }
   }
