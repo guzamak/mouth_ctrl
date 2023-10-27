@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@font-face {
+    font-family: "KAUFMANN";
+    src: url("./assets/fonts/KAUFMANN.TTF");
+}
+
+@font-face {
+    font-family: "NeutraText-Demi";
+    src: url("./assets/fonts/NeutraText-Demi.otf");
+}
+@font-face {
+    font-family: "IBMPlexSansThai";
+    src: url("./assets/fonts/IBMPlexSansThai-Regular.ttf");
+  }
+  
+  @font-face {
+    font-family: "IBMPlexSansThai";
+    src: url("./assets/fonts/IBMPlexSansThai-Thin.ttf");
+    font-weight: 100;
+  }
+  @font-face {
+    font-family: "IBMPlexSansThai";
+    src: url("./assets/fonts/IBMPlexSansThai-ExtraLight.ttf");
+    font-weight: 200;
+  }
+  @font-face {
+    font-family: "IBMPlexSansThai";
+    src: url("./assets/fonts/IBMPlexSansThai-Light.ttf");
+    font-weight: 300;
+  }
+  @font-face {
+    font-family: "IBMPlexSansThai";
+    src: url("./assets/fonts/IBMPlexSansThai-Medium.ttf");
+    font-weight: 500;
+  }
+  @font-face {
+    font-family: "IBMPlexSansThai";
+    src: url("./assets/fonts/IBMPlexSansThai-SemiBold.ttf");
+    font-weight: 600;
+  }
+  @font-face {
+    font-family: "IBMPlexSansThai";
+    src: url("./assets/fonts/IBMPlexSansThai-Bold.ttf");
+    font-weight: 700;
+  }
+  
+  
+
+
+body {
+    @apply font-IBMPlexSansThai text-secondary-100;
+
+}
+p,button,input,a,li{
+    font-size: calc(0.75rem + 0.25vw);
+}
+
+h1{
+    font-size: calc(1.25rem + 0.25vw);
+}
+h2{
+    font-size: calc(1.5rem + 0.25vw);
+}
+h3{
+    font-size: calc(1.875rem + 0.25vw);
+}   
+h4{
+    font-size: calc(2.25rem + 0.25vw);
+}
+h5{
+    font-size: calc(3rem + 0.25vw);
+}
+h6{
+    font-size: calc(3.75rem + 0.25vw);
+}
+
+.type-btn{ 
+    @apply hover:text-gray-700 w-[30%] py-2 rounded-3xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px] transition-all duration-200 ease-in
+}
+
+
+.bush-size {
+
+  @apply bg-gray-400 overflow-hidden rounded-md outline-none appearance-none 
+}
+.bush-size::-webkit-slider-thumb {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  @apply  bg-gray-500 shadow-gray-500 shadow-[-407px_0px_0px_400px] appearance-none 
+}
