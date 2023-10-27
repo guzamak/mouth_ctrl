@@ -277,7 +277,7 @@ export default function Drawing() {
       ...canvasState,
       initialScale: Math.min(scaleX, scaleY),
     })
-    setIsDraw()
+    setIsDraw(false)
 
   }, [canvasState])
 
