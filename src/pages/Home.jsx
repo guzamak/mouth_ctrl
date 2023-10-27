@@ -57,13 +57,13 @@ export default function Home() {
 
     getdata()
 
-    return() => {
+    return () => {
       setImgList()
     }
 
   }, [ordertype])
 
-  const like = async(imgId) => {
+  const like = async (imgId) => {
 
     const imgIndex = imgList.findIndex(img => img.id === imgId)
     const img = imgList[imgIndex]
@@ -74,26 +74,30 @@ export default function Home() {
       // toggle like
       if (userLike.includes(user.uid)) {
 
-        const newImgList = [...imgList]
-        newImgList[imgIndex].data.userLike = userLike.filter(uid => uid !== user.uid);
-        setImgList(newImgList)
-        // unlike
 
         await updateDoc(doc(db, "img", imgId), {
           userLike: arrayRemove(user.uid),
           like: like - 1
         })
 
-      } else {
-        // add like user.id
         const newImgList = [...imgList]
-        newImgList[imgIndex].data.userLike.push(user.uid)
+        newImgList[imgIndex].data.userLike = userLike.filter(uid => uid !== user.uid);
         setImgList(newImgList)
+        // unlike
+
+
+      } else {
+
         // like
         await updateDoc(doc(db, "img", imgId), {
           userLike: arrayUnion(user.uid),
           like: like + 1
         })
+        
+        // add like user.id
+        const newImgList = [...imgList]
+        newImgList[imgIndex].data.userLike.push(user.uid)
+        setImgList(newImgList)
 
       }
     }
@@ -182,9 +186,9 @@ export default function Home() {
                   </div>
                   {/* desc section */}
                   <div className='flex px-5 py-5 w-full justify-between items-center '>
-                      <div className=''>
+                    <div className=''>
                       <Link to={`user/${img.data.owner}`}>{img.data.owner}</Link>
-                      </div> 
+                    </div>
 
                     <div className='flex justify-center items-center '>
                       <p className='px-3'>{img.data.userLike.length}</p>
@@ -205,14 +209,14 @@ export default function Home() {
         </div>
       </section>
 
-      {!imgLoading?
-            <div className='flex justify-center my-9'>
-            <button className='border border-gray-500 text-gray-500 text-center p-2 px-5 rounded-xl hover:bg-black hover:text-white hover:border-none transition-all duration-200 ease-in'
-              onClick={getMoreData}
-            >Load more img
-            </button>
-          </div>
-    : <div className='my-9'><Loading/></div>}
+      {!imgLoading ?
+        <div className='flex justify-center my-9'>
+          <button className='border border-gray-500 text-gray-500 text-center p-2 px-5 rounded-xl hover:bg-black hover:text-white hover:border-none transition-all duration-200 ease-in'
+            onClick={getMoreData}
+          >Load more img
+          </button>
+        </div>
+        : <div className='my-9'><Loading /></div>}
 
 
       <dialog id="my_modal_2" className="modal">
