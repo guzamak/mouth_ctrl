@@ -9,10 +9,6 @@
 }
 
 @font-face {
-    font-family: "NeutraText-Demi";
-    src: url("./assets/fonts/NeutraText-Demi.otf");
-}
-@font-face {
     font-family: "IBMPlexSansThai";
     src: url("./assets/fonts/IBMPlexSansThai-Regular.ttf");
   }
@@ -52,8 +48,7 @@
 
 
 body {
-    @apply font-IBMPlexSansThai text-secondary-100;
-
+    @apply font-IBMPlexSansThai text-gray-700;
 }
 p,button,input,a,li{
     font-size: calc(0.75rem + 0.25vw);
@@ -84,9 +79,9 @@ h6{
 
 
 .bush-size {
-
   @apply bg-gray-400 overflow-hidden rounded-md outline-none appearance-none 
 }
+
 .bush-size::-webkit-slider-thumb {
   width: 15px;
   height: 15px;
