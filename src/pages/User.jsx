@@ -91,6 +91,10 @@ export default function User() {
 
     getdata()
 
+    return() => {
+      setImgList()
+    }
+
   }, [ordertype])
 
 

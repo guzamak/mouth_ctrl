@@ -57,6 +57,10 @@ export default function Home() {
 
     getdata()
 
+    return() => {
+      setImgList()
+    }
+
   }, [ordertype])
 
   const like = async(imgId) => {
