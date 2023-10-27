@@ -297,7 +297,7 @@ export default function Drawing() {
       const width = e.target.width.value
       const height = e.target.height.value
 
-      if (!isNaN(width) && !isNaN(height)) {
+      if (!isNaN(width) && !isNaN(height) && width != "" && height != "") {
         document.getElementById('my_modal_1').close()
       bglayer.current.width = width
       bglayer.current.height = height
@@ -321,7 +321,7 @@ export default function Drawing() {
         canvasRect.left - ((scrollableDiv.current.offsetWidth - canvasRect.width) / 2),
         canvasRect.top - ((scrollableDiv.current.offsetHeight - canvasRect.height) / 2)
       );
-     }else{
+     }else {
       setCreateError("please enter numbers only")
      }
       
