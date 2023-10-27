@@ -74,30 +74,27 @@ export default function Home() {
       // toggle like
       if (userLike.includes(user.uid)) {
 
+        const newImgList = [...imgList]
+        newImgList[imgIndex].data.userLike = userLike.filter(uid => uid !== user.uid);
+        setImgList(newImgList)
 
         await updateDoc(doc(db, "img", imgId), {
           userLike: arrayRemove(user.uid),
           like: like - 1
         })
 
-        const newImgList = [...imgList]
-        newImgList[imgIndex].data.userLike = userLike.filter(uid => uid !== user.uid);
-        setImgList(newImgList)
-
-
 
       } else {
-
         
+        const newImgList = [...imgList]
+        newImgList[imgIndex].data.userLike.push(user.uid)
+        setImgList(newImgList)
+
         await updateDoc(doc(db, "img", imgId), {
           userLike: arrayUnion(user.uid),
           like: like + 1
         })
 
-       
-        const newImgList = [...imgList]
-        newImgList[imgIndex].data.userLike.push(user.uid)
-        setImgList(newImgList)
 
       }
     }

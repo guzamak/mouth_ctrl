@@ -14,10 +14,9 @@ export default function User() {
   //getuserdata
   const { user } = useContext(Authcontext)
   const { username } = useParams()
-  const navigate = useNavigate()
   const [imgList, setImgList] = useState([])
   const [checkUser, setCheckUser] = useState()
-  const [ordertype, setOderType] = useState("Recently") 
+  const [ordertype, setOderType] = useState("Recently")
   const [currentImg, setCurrentImg] = useState()
   const [imgLoading, setimgLoading] = useState(true)
 
@@ -26,11 +25,11 @@ export default function User() {
   const getdata = async () => {
     setImgList([])
     setimgLoading(true)
-    const finduser = await getDocs(query(collection(db, "user"), where('username', '==', username)))  
+    const finduser = await getDocs(query(collection(db, "user"), where('username', '==', username)))
 
-    if (!finduser.docs[0]){
+    if (!finduser.docs[0]) {
       setCheckUser("NoUser")
-    }else{
+    } else {
       setCheckUser(finduser.docs[0].id)
       let querySnapshot
       if (user && user.uid == finduser.docs[0].id) {
@@ -51,7 +50,7 @@ export default function User() {
             orderBy("timestamp", "desc"),
             limit(10)))
         }
-  
+
       } else {
         if (ordertype == "Recently") {
           querySnapshot = await getDocs(query(collection(db, "img"),
@@ -68,18 +67,18 @@ export default function User() {
             limit(10)))
         }
       }
-  
+
       if (querySnapshot) {
         const allimg = await Promise.all(querySnapshot.docs.map(async (img) => {
           const url = await getDownloadURL((ref(storage, img.id)))
           const imgdata = img.data()
           imgdata.owner = (await getDoc(doc(db, "user", imgdata.userId))).data().username
           imgdata.url = url
-  
+
           const imgobj = { id: img.id, data: imgdata }
           return imgobj
         }))
-  
+
         setImgList(allimg)
         setimgLoading(false)
       }
@@ -91,17 +90,17 @@ export default function User() {
 
     getdata()
 
-    return() => {
+    return () => {
       setImgList()
     }
 
   }, [ordertype])
 
-  useEffect(()=>{
-    return() => {
+  useEffect(() => {
+    return () => {
       setCheckUser()
     }
-  },[])
+  }, [])
 
 
 
@@ -116,30 +115,27 @@ export default function User() {
       // toggle like
       if (userLike.includes(user.uid)) {
 
+        const newImgList = [...imgList]
+        newImgList[imgIndex].data.userLike = userLike.filter(uid => uid !== user.uid);
+        setImgList(newImgList)
 
         await updateDoc(doc(db, "img", imgId), {
           userLike: arrayRemove(user.uid),
           like: like - 1
         })
 
-        const newImgList = [...imgList]
-        newImgList[imgIndex].data.userLike = userLike.filter(uid => uid !== user.uid);
-        setImgList(newImgList)
-
-
 
       } else {
-
         
+        const newImgList = [...imgList]
+        newImgList[imgIndex].data.userLike.push(user.uid)
+        setImgList(newImgList)
+
         await updateDoc(doc(db, "img", imgId), {
           userLike: arrayUnion(user.uid),
           like: like + 1
         })
 
-       
-        const newImgList = [...imgList]
-        newImgList[imgIndex].data.userLike.push(user.uid)
-        setImgList(newImgList)
 
       }
     }
@@ -147,34 +143,34 @@ export default function User() {
 
   const post = async (imgId) => {
     const imgIndex = imgList.findIndex(img => img.id === imgId)
-    await updateDoc(doc(db, "img", imgId), {
-      post: true
-    })
     const newImgList = [...imgList]
     newImgList[imgIndex].data.post = true
     setImgList(newImgList)
+    await updateDoc(doc(db, "img", imgId), {
+      post: true
+    })
   }
 
   const unpost = async (imgId) => {
     const imgIndex = imgList.findIndex(img => img.id === imgId)
-    await updateDoc(doc(db, "img", imgId), {
-      post: false
-    })
     const newImgList = [...imgList]
     newImgList[imgIndex].data.post = false
     setImgList(newImgList)
+    await updateDoc(doc(db, "img", imgId), {
+      post: false
+    })
   }
 
   const deleteImg = async (imgid) => {
-    await deleteDoc(doc(db, "img", imgid))
-    const deleteimg = ref(storage, imgid);
-    await deleteObject(deleteimg)
     const deleteImgIndex = imgList.findIndex(img => img.id === imgid)
     if (deleteImgIndex != -1) {
       const newImgList = [...imgList]
       newImgList.splice(deleteImgIndex, 1)
       setImgList(newImgList)
     }
+    await deleteDoc(doc(db, "img", imgid))
+    const deleteimg = ref(storage, imgid);
+    await deleteObject(deleteimg)
   }
 
   const clickimg = (imgUrl) => {
@@ -252,104 +248,104 @@ export default function User() {
 
       {checkUser != "NoUser" ? <>
         {/* hero */}
-      <div className='hero min-h-[50vh] bg-gray-100 shadow-inner	'>
-        <div className='flex flex-col justify-center items-start px-[5vw] w-full h-full'>
-          <h6 className=" font-bold  font-KAUFMANN">
-            {checkUser  != "NoUser" ?<>{user && user.uid == checkUser ? "User's Art" : `${username}'s Art`}</>:null}
-          </h6>
-          <p className=' my-3 font-extralight'>
-            user/{username}
-          </p>
-        </div>
-      </div>
-
-
-      {/* img */}
-      <section className="bg-white rounded-2xl -translate-y-4 px-[5vw]">
-        {/* nav */}
-        <div className="container py-10 mx-auto">
-
-          <div className="flex w-full max-w-[30rem] ">
-            <button className={`type-btn ${ordertype === "Recently" ? "text-black" : "text-gray-300"}`}
-              onClick={() => { setOderType("Recently") }}>Recently</button>
-            <button className={`type-btn mx-[8%] ${ordertype === "Popular" ? "text-black" : "text-gray-300"}`}
-              onClick={() => { setOderType("Popular") }}>Popular</button>
-            {user ? user.uid == checkUser &&
-              <button className={`type-btn ${ordertype === "Like" ? "text-black" : "text-gray-300"}`}
-                onClick={() => { setOderType("Like") }} >Like</button>
-              : null}
+        <div className='hero min-h-[50vh] bg-gray-100 shadow-inner	'>
+          <div className='flex flex-col justify-center items-start px-[5vw] w-full h-full'>
+            <h6 className=" font-bold  font-KAUFMANN">
+              {checkUser != "NoUser" ? <>{user && user.uid == checkUser ? "User's Art" : `${username}'s Art`}</> : null}
+            </h6>
+            <p className=' my-3 font-extralight'>
+              user/{username}
+            </p>
           </div>
+        </div>
 
-          {/* img container */}
-          <div className="grid grid-cols-1 gap-8 mt-20 xs:grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 lg:grid-cols-3 ">
 
-            {/* img element */}
+        {/* img */}
+        <section className="bg-white rounded-2xl -translate-y-4 px-[5vw]">
+          {/* nav */}
+          <div className="container py-10 mx-auto">
 
-            {imgList.length != 0 &&
-              imgList.map((img) => {
-                return <div key={img.id} className='h-96 overflow-hidden rounded-2xl shadow-[rgba(50,_50,_105,_0.10)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.025)_0px_1px_1px_0px]'>
-                  {/* img */}
-                  <div class="w-full h-[82%]">
-                    <img src={img.data.url} className='object-cover h-full w-full' onClick={() => { clickimg(img.data.url) }} />
+            <div className="flex w-full max-w-[30rem] ">
+              <button className={`type-btn ${ordertype === "Recently" ? "text-black" : "text-gray-300"}`}
+                onClick={() => { setOderType("Recently") }}>Recently</button>
+              <button className={`type-btn mx-[8%] ${ordertype === "Popular" ? "text-black" : "text-gray-300"}`}
+                onClick={() => { setOderType("Popular") }}>Popular</button>
+              {user ? user.uid == checkUser &&
+                <button className={`type-btn ${ordertype === "Like" ? "text-black" : "text-gray-300"}`}
+                  onClick={() => { setOderType("Like") }} >Like</button>
+                : null}
+            </div>
 
-                  </div>
-                  {/* desc section */}
-                  <div className='flex px-5 py-5 w-full justify-between items-center '>
-                    {user ? user.uid == img.data.userId ?
-                      <div className='border border-gray-500 text-gray-500 text-center p-2 px-5 rounded-2xl hover:bg-black hover:text-white hover:border-none transition-all duration-200 ease-in'>
-                        {img.data.post ? <button onClick={() => { unpost(img.id) }}>unpost</button> : <button onClick={() => { post(img.id) }}>post</button>}
-                      </div> :
-                      <div className=''>
-                        {/* if userlogin != urluser */}
-                        {img.data.owner}
-                      </div> :
-                      <div className=''>
-                        {/* if user not have */}
-                        {img.data.owner}
-                      </div>}
+            {/* img container */}
+            <div className="grid grid-cols-1 gap-8 mt-20 xs:grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 lg:grid-cols-3 ">
 
-                    <div className='flex justify-center items-center '>
-                      <p className='px-3'>{img.data.userLike.length}</p>
-                      <button onClick={() => { like(img.id) }}>
-                        {user ? img.data.userLike.includes(user.uid) ? <AiFillHeart /> : <AiOutlineHeart /> : <AiOutlineHeart className='text-gray-300' />}
-                      </button>
-                      {user ? user.uid == img.data.userId ? <button onClick={() => { deleteImg(img.id) }} className='px-2 text-red-300'>
-                        <FiTrash2 />
-                      </button> : null : null}
+              {/* img element */}
+
+              {imgList.length != 0 &&
+                imgList.map((img) => {
+                  return <div key={img.id} className='h-96 overflow-hidden rounded-2xl shadow-[rgba(50,_50,_105,_0.10)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.025)_0px_1px_1px_0px]'>
+                    {/* img */}
+                    <div class="w-full h-[82%]">
+                      <img src={img.data.url} className='object-cover h-full w-full' onClick={() => { clickimg(img.data.url) }} />
+
                     </div>
+                    {/* desc section */}
+                    <div className='flex px-5 py-5 w-full justify-between items-center '>
+                      {user ? user.uid == img.data.userId ?
+                        <div className='border border-gray-500 text-gray-500 text-center p-2 px-5 rounded-2xl hover:bg-black hover:text-white hover:border-none transition-all duration-200 ease-in'>
+                          {img.data.post ? <button onClick={() => { unpost(img.id) }}>unpost</button> : <button onClick={() => { post(img.id) }}>post</button>}
+                        </div> :
+                        <div className=''>
+                          {/* if userlogin != urluser */}
+                          {img.data.owner}
+                        </div> :
+                        <div className=''>
+                          {/* if user not have */}
+                          {img.data.owner}
+                        </div>}
+
+                      <div className='flex justify-center items-center '>
+                        <p className='px-3'>{img.data.userLike.length}</p>
+                        <button onClick={() => { like(img.id) }}>
+                          {user ? img.data.userLike.includes(user.uid) ? <AiFillHeart /> : <AiOutlineHeart /> : <AiOutlineHeart className='text-gray-300' />}
+                        </button>
+                        {user ? user.uid == img.data.userId ? <button onClick={() => { deleteImg(img.id) }} className='px-2 text-red-300'>
+                          <FiTrash2 />
+                        </button> : null : null}
+                      </div>
+                    </div>
+
                   </div>
+                })
 
-                </div>
-              })
+              }
 
-            }
+            </div>
+
 
           </div>
+        </section>
 
 
-        </div>
-      </section>
+        {!imgLoading ?
+          <div className='flex justify-center my-9'>
+            <button className='border border-gray-500 text-gray-500 text-center p-2 px-5 rounded-xl hover:bg-black hover:text-white hover:border-none transition-all duration-200 ease-in'
+              onClick={getMoreData}
+            >Load more img
+            </button>
+          </div>
+          : <div className='my-9'><Loading /></div>}
 
+        <dialog id="my_modal_2" className="modal">
+          <div className="modal-box shadow-[rgba(50,_50,_105,_0.10)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.025)_0px_1px_1px_0px]">
+            <img src={currentImg} alt="" />
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
 
-      {!imgLoading ?
-        <div className='flex justify-center my-9'>
-          <button className='border border-gray-500 text-gray-500 text-center p-2 px-5 rounded-xl hover:bg-black hover:text-white hover:border-none transition-all duration-200 ease-in'
-            onClick={getMoreData}
-          >Load more img
-          </button>
-        </div>
-        : <div className='my-9'><Loading /></div>}
-
-      <dialog id="my_modal_2" className="modal">
-        <div className="modal-box shadow-[rgba(50,_50,_105,_0.10)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.025)_0px_1px_1px_0px]">
-          <img src={currentImg} alt="" />
-        </div>
-        <form method="dialog" className="modal-backdrop">
-          <button>close</button>
-        </form>
-      </dialog>
-      
-      </>:<Error/>}
+      </> : <Error />}
 
     </section>
   )
