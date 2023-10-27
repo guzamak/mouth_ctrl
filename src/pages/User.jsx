@@ -98,7 +98,8 @@ export default function User() {
   }, [ordertype])
 
 
-  const like = async(imgId) => {
+
+  const like = async (imgId) => {
 
     const imgIndex = imgList.findIndex(img => img.id === imgId)
     const img = imgList[imgIndex]
@@ -109,26 +110,30 @@ export default function User() {
       // toggle like
       if (userLike.includes(user.uid)) {
 
-        const newImgList = [...imgList]
-        newImgList[imgIndex].data.userLike = userLike.filter(uid => uid !== user.uid);
-        setImgList(newImgList)
-        // unlike
 
         await updateDoc(doc(db, "img", imgId), {
           userLike: arrayRemove(user.uid),
           like: like - 1
         })
 
-      } else {
-        // add like user.id
         const newImgList = [...imgList]
-        newImgList[imgIndex].data.userLike.push(user.uid)
+        newImgList[imgIndex].data.userLike = userLike.filter(uid => uid !== user.uid);
         setImgList(newImgList)
-        // like
+
+
+
+      } else {
+
+        
         await updateDoc(doc(db, "img", imgId), {
           userLike: arrayUnion(user.uid),
           like: like + 1
         })
+
+       
+        const newImgList = [...imgList]
+        newImgList[imgIndex].data.userLike.push(user.uid)
+        setImgList(newImgList)
 
       }
     }

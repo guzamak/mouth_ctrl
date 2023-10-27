@@ -83,18 +83,18 @@ export default function Home() {
         const newImgList = [...imgList]
         newImgList[imgIndex].data.userLike = userLike.filter(uid => uid !== user.uid);
         setImgList(newImgList)
-        // unlike
+
 
 
       } else {
 
-        // like
+        
         await updateDoc(doc(db, "img", imgId), {
           userLike: arrayUnion(user.uid),
           like: like + 1
         })
-        
-        // add like user.id
+
+       
         const newImgList = [...imgList]
         newImgList[imgIndex].data.userLike.push(user.uid)
         setImgList(newImgList)
