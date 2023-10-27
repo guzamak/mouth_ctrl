@@ -97,6 +97,12 @@ export default function User() {
 
   }, [ordertype])
 
+  useEffect(()=>{
+    return() => {
+      setCheckUser()
+    }
+  },[])
+
 
 
   const like = async (imgId) => {
