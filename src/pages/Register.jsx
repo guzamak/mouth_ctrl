@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import { auth, db } from '../firebase-config'
-import { collection, where, getDocs, query, setDoc, doc } from '@firebase/firestore'
-import { createUserWithEmailAndPassword } from '@firebase/auth'
-import { useNavigate } from 'react-router'
-import { Link } from 'react-router-dom'
+import React, { useState } from "react"
+import { auth, db } from "../firebase-config"
+import { collection, where, getDocs, query, setDoc, doc } from "@firebase/firestore"
+import { createUserWithEmailAndPassword } from "@firebase/auth"
+import { useNavigate } from "react-router"
+import { Link } from "react-router-dom"
 
 export default function Register() {
 
@@ -26,20 +26,20 @@ export default function Register() {
     };
 
 
-    const querySnapshot = await getDocs(query(collection(db, 'user'),
-      where('username', '==', username)))
+    const querySnapshot = await getDocs(query(collection(db, "user"),
+      where("username", "==", username)))
 
 
     if (!querySnapshot.empty) {
-      setError('username have use')
+      setError("username have use")
     } else if (password.length < 8) {
-      setError('password must have at least 8 characters ')
+      setError("password must have at least 8 characters ")
     } else if (password != confirmPassword) {
-      setError('comfirmPassword incorrect')
+      setError("comfirmPassword incorrect")
     } else if (!validateEmail) {
-      setError('email incorrect')
-    } else if (username == '' || email == '' || password == '' || confirmPassword == '') {
-      setError('please enter all fil')
+      setError("email incorrect")
+    } else if (username == "" || email == "" || password == "" || confirmPassword == "") {
+      setError("please enter all fil")
     }
     else {
       createUserWithEmailAndPassword(auth, email, password)
@@ -48,9 +48,9 @@ export default function Register() {
           setDoc(doc(db, "user", userid), {
             username: username
           })
-          navigate('/')
+          navigate("/")
         }).catch( (error) => {
-          setError('email have use')
+          setError("email have use")
         });
     }
   }
@@ -58,10 +58,10 @@ export default function Register() {
   return (
     <section>
       {/* form */}
-      <div className='flex flex-col justify-center items-center '>
-        <div className='text-center mt-5'>
-          <h5 className='font-KAUFMANN'>Sign up</h5>
-          <p className='text-gray-300'>Get started with Us</p>
+      <div className="flex flex-col justify-center items-center ">
+        <div className="text-center mt-5">
+          <h5 className="font-KAUFMANN">Sign up</h5>
+          <p className="text-gray-300">Get started with Us</p>
         </div>
 
         {/* form */}
@@ -69,7 +69,7 @@ export default function Register() {
 
           <div className="mt-4 flex flex-col w-[80%]">
             <p className="text-xs">Username</p>
-            <div className='w-full'>
+            <div className="w-full">
             <input
               id="username"
               type="text"
@@ -113,7 +113,7 @@ export default function Register() {
 
           <p className=" w-[80%] mt-4 text-xs text-start text-red-300">{error && "* " + error}</p>
           <div className="mt-4 flex flex-col w-[80%]">
-            <button type='submit'
+            <button type="submit"
               className="border border-black hover:bg-gray-700 hover:text-white my-2 p-2 transition-all duration-200 ease-in rounded-2xl"
             >Sign Up</button>
           </div>

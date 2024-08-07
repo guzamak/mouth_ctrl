@@ -77,7 +77,6 @@ h6{
     @apply hover:text-gray-700 w-[30%] py-2 rounded-3xl shadow-[rgba(50,_50,_105,_0.15)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.05)_0px_1px_1px_0px] transition-all duration-200 ease-in
 }
 
-
 .bush-size {
   @apply bg-gray-400 overflow-hidden rounded-md outline-none appearance-none 
 }

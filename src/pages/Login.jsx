@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
-import { auth, db } from '../firebase-config'
-import { signInWithEmailAndPassword } from '@firebase/auth'
-import { useNavigate } from 'react-router'
-import { Link } from 'react-router-dom'
+import React, { useState } from "react"
+import { auth, db } from "../firebase-config"
+import { signInWithEmailAndPassword } from "@firebase/auth"
+import { useNavigate } from "react-router"
+import { Link } from "react-router-dom"
 
 export default function Login() {
 
@@ -24,17 +24,17 @@ export default function Login() {
         );
     };
 
-    if (email == '' || password == '') {
-      setError('please enter all fil')
+    if (email == "" || password == "") {
+      setError("please enter all fil")
     } else if (!validateEmail(email)) {
-      setError('email incorrect')
+      setError("email incorrect")
     } else {
 
       signInWithEmailAndPassword(auth, email, password).then((res) => {
-        navigate('/')
+        navigate("/")
       })
         .catch((error) => {
-          setError('email or password incorrect')
+          setError("email or password incorrect")
         })
 
     }
@@ -44,10 +44,10 @@ export default function Login() {
   return (
     <section>
       {/* form */}
-      <div className='flex flex-col justify-center items-center '>
-        <div className='text-center mt-5'>
-          <h5 className='font-KAUFMANN'>Sign In</h5>
-          <p className='text-gray-300'>Go to Account</p>
+      <div className="flex flex-col justify-center items-center">
+        <div className="text-center mt-5">
+          <h5 className="font-KAUFMANN">Sign In</h5>
+          <p className="text-gray-299">Go to Account</p>
         </div>
 
         {/* form */}
@@ -79,7 +79,7 @@ export default function Login() {
 
           <p className=" w-[80%] mt-4 text-xs text-start text-red-300">{error && "* " + error}</p>
           <div className="mt-4 flex flex-col w-[80%]">
-            <button type='submit'
+            <button type="submit"
               className="border border-black hover:bg-gray-700 hover:text-white my-2 p-2 transition-all duration-200 ease-in rounded-2xl"
             >Sign In</button>
           </div>

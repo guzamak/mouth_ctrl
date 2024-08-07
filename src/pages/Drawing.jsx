@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState, useCallback, useContext } from 'react'
-import { Authcontext } from '../App';
-import * as tf from '@tensorflow/tfjs'
-import * as blazeface from '@tensorflow-models/blazeface'
-import { storage, db } from '../firebase-config';
-import { setDoc, doc, addDoc, collection, serverTimestamp } from '@firebase/firestore'
+import { useEffect, useRef, useState, useCallback, useContext } from "react"
+import { Authcontext } from "../App";
+import * as tf from "@tensorflow/tfjs"
+import * as blazeface from "@tensorflow-models/blazeface"
+import { storage, db } from "../firebase-config";
+import { setDoc, doc, addDoc, collection, serverTimestamp } from "@firebase/firestore"
 import { ref, uploadString } from "@firebase/storage";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import { RiEdit2Line, RiEraserLine, RiDeleteBin6Line, RiArrowGoBackLine, RiArrowGoForwardFill, RiInstallLine, RiArrowDownSLine, RiArrowUpSLine } from "react-icons/ri";
-import { BsPlusSquareFill } from 'react-icons/bs'
-import { AiOutlineCheck } from 'react-icons/ai'
+import { BsPlusSquareFill } from "react-icons/bs"
+import { AiOutlineCheck } from "react-icons/ai"
 
 export default function Drawing() {
 
@@ -51,46 +51,52 @@ export default function Drawing() {
 
   const { user } = useContext(Authcontext)
 
-  let smoothedX = null;
-  let smoothedY = null;
-  let smoothingFactor = 0.8
+  const smoothedX = useRef(null)
+  const smoothedY  = useRef(null)
+  const smoothingFactor = useRef(0.8)
 
   const smoothCoordinate = useCallback((x, y) => {
 
-    if (smoothedX === null || smoothedY === null) {
-      smoothedX = x;
-      smoothedY = y;
+    if (smoothedX.current === null || smoothedY.current === null) {
+      smoothedX.current = x;
+      smoothedY.current = y;
     } else {
-      smoothedX = smoothingFactor * smoothedX + (1 - smoothingFactor) * x;
-      smoothedY = smoothingFactor * smoothedY + (1 - smoothingFactor) * y;
+      smoothedX.current = smoothingFactor.current * smoothedX.current + (1 - smoothingFactor.current) * x;
+      smoothedY.current = smoothingFactor.current * smoothedY.current + (1 - smoothingFactor.current) * y;
     }
-    return { x: smoothedX, y: smoothedY };
+    return { x: smoothedX.current, y: smoothedY.current };
   }, [])
 
 
   const drawLine = useCallback((x, y) => {
-    !canvasState.eraser ? ctx.draw.globalCompositeOperation = 'source-over' : ctx.draw.globalCompositeOperation = 'destination-out'
+if (undoStack.length == 0){
+setUndoStack([...undoStack,drawlayer.current.toDataURL()])
+    setRedoStack([])
+}
+else{
+    !canvasState.eraser ? ctx.draw.globalCompositeOperation = "source-over" : ctx.draw.globalCompositeOperation = "destination-out"
     ctx.draw.lineWidth = canvasState.brushsize
     ctx.draw.strokeStyle = canvasState.color;
-    ctx.draw.lineCap = 'round'
+    ctx.draw.lineCap = "round"
     ctx.draw.lineTo(x, y);
     ctx.draw.stroke();
     ctx.draw.beginPath();
     ctx.draw.moveTo(x, y);
-    ctx.draw.globalCompositeOperation = 'source-over' //change mode before save 
-    setUndoStack([...undoStack,drawlayer.current.toDataURL()])
+    ctx.draw.globalCompositeOperation = "source-over" // change mode before save 
+setUndoStack([...undoStack,drawlayer.current.toDataURL()])
     setRedoStack([])
+}
   }, [ctx, canvasState, undoStack])
 
   const onDraw = useCallback(() => {
     setIsDraw(true)
-  }, [undoStack])
+  }, [])
 
   const unDraw = useCallback(() => {
     setIsDraw(false)
   }, [])
 
-  //paning and zoom
+  // paning and zoom
   const handleMouseDown = useCallback((e) => {
     setViewportState({
       ...viewportState,
@@ -112,9 +118,9 @@ export default function Drawing() {
   const handleMouseMove = useCallback((e) => {
     e.preventDefault();
     if (viewportState.isMouseDown && !isDraw) {
-      const x = e.pageX - scrollableDiv.current.offsetLeft;//endx
+      const x = e.pageX - scrollableDiv.current.offsetLeft;// endx
       const y = e.pageY - scrollableDiv.current.offsetTop;
-      const walkX = (x - viewportState.startX) * 0.5; // value(startx-endx) * speed
+      const walkX = (x - viewportState.startX) * 0.5; // value (startx-endx) * speed
       const walkY = (y - viewportState.startY) * 0.5;
       scrollableDiv.current.scrollLeft = viewportState.startScrollLeft - walkX;
       scrollableDiv.current.scrollTop = viewportState.startScrollTop - walkY;
@@ -125,14 +131,13 @@ export default function Drawing() {
     if (e.ctrlKey && !isDraw && ctx.draw) {
       const currentZoom = contentScale;
       const zoomFactor = 1 + e.deltaY * 0.001;
-
-      const newZoom = Math.round(Math.min(Math.max(currentZoom * zoomFactor, 0.1), 5) * 100) / 100;
+      const newZoom = Math.round(Math.min(Math.max(currentZoom * zoomFactor, 0.1), 2) * 100) / 100;
       setContentScale(newZoom);
     }
   }, [isDraw, contentScale, ctx])
 
 
-  // //zoom in phone
+  //zoom in phone
 
   const handleTouchStart = useCallback((e) => {
     if (e.touches.length === 1) {
@@ -148,7 +153,8 @@ export default function Drawing() {
     if (e.touches.length === 2) {
       setViewportState({
         ...viewportState,
-        initialDistance: Math.hypot(e.touches[0].pageX - e.touches[1].pageX,
+        initialDistance: Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
           e.touches[0].pageY - e.touches[1].pageY)
       })
     }
@@ -196,7 +202,7 @@ export default function Drawing() {
       setUndoStack(newUndo);
       setRedoStack([...redoStack, lastUndo]);
       const img = new Image();
-      img.src = newUndo[newUndo.length - 1]
+      img.src = lastUndo;
       img.onload = () => {
         ctx.draw.clearRect(0, 0, drawlayer.current.width, drawlayer.current.height);
         ctx.draw.drawImage(img, 0, 0);
@@ -298,15 +304,15 @@ export default function Drawing() {
       const height = e.target.height.value
 
       if (!isNaN(width) && !isNaN(height) && width != "" && height != "") {
-        document.getElementById('my_modal_1').close()
+        document.getElementById("my_modal_1").close()
       bglayer.current.width = width
       bglayer.current.height = height
 
       drawlayer.current.width = width
       drawlayer.current.height = height
 
-      const bgctx = bglayer.current.getContext('2d')
-      const drawctx = drawlayer.current.getContext('2d')
+      const bgctx = bglayer.current.getContext("2d")
+      const drawctx = drawlayer.current.getContext("2d")
       setctx({
         draw: drawctx,
         bg: bgctx
@@ -324,11 +330,8 @@ export default function Drawing() {
      }else {
       setCreateError("please enter numbers only")
      }
-      
-
-        
+              
       resizeCanvas()
-
 
     }
   }
@@ -338,13 +341,13 @@ export default function Drawing() {
     if (ctx.bg && ctx.draw && !isDraw) {
       mergeCanvas.current.width = bglayer.current.width
       mergeCanvas.current.height = bglayer.current.height
-      const mergectx = mergeCanvas.current.getContext('2d')
+      const mergectx = mergeCanvas.current.getContext("2d")
       mergectx.drawImage(bglayer.current, 0, 0);
       mergectx.drawImage(drawlayer.current, 0, 0);
       const mergedDataURL = mergeCanvas.current.toDataURL();
       const imgName = uuidv4()
       const storageRef = ref(storage, imgName);
-      uploadString(storageRef, mergedDataURL, 'data_url').then((snapshot) => {
+      uploadString(storageRef, mergedDataURL, "data_url").then((snapshot) => {
         setDoc(doc(db, "img", `${imgName}`), {
           userId: user.uid,
           like: 0,
@@ -356,21 +359,21 @@ export default function Drawing() {
         setTimeout(() => { savePopUp.current.classList.remove("opacity-100") }, 1000)
       });
     }
-  }, [ctx, isDraw])
+  }, [ctx.bg, ctx.draw, isDraw, user.uid])
 
 
-  //start and end draw undo
+  // start and end draw undo
   useEffect(() => {
     const keydown = (e) => {
-      if (e.code === 'Space') {
+      if (e.code === "Space") {
         onDraw()
         e.preventDefault()
       }
-      if (e.ctrlKey && e.shiftKey && e.key === 'Z') {
+      if (e.ctrlKey && e.shiftKey && e.key === "Z") {
         redo()
         e.preventDefault()
       }
-      else if (e.ctrlKey && e.key === 'z') {
+      else if (e.ctrlKey && e.key === "z") {
         undo()
         e.preventDefault()
       }
@@ -379,20 +382,20 @@ export default function Drawing() {
 
     const keyup = (e) => {
 
-      if (e.code === 'Space') {
+      if (e.code === "Space") {
         unDraw()
         e.preventDefault()
       }
     }
 
-    document.addEventListener('keydown', keydown, { passive: false });
-    document.addEventListener('keyup', keyup, { passive: false });
+    document.addEventListener("keydown", keydown);
+    document.addEventListener("keyup", keyup);
 
     return () => {
-      document.removeEventListener('keydown', keydown)
-      document.removeEventListener('keyup', keyup)
+      document.removeEventListener("keydown", keydown)
+      document.removeEventListener("keyup", keyup)
     }
-  }, [ctx, undoStack, redoStack])
+  }, [ctx, undoStack, redoStack, onDraw, redo, undo, unDraw])
 
   //resize screen
   useEffect(() => {
@@ -401,10 +404,10 @@ export default function Drawing() {
     window.addEventListener("resize", resizeWebcam)
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas)
+      window.removeEventListener("resize", resizeCanvas)
     }
 
-  }, [canvasState])
+  }, [canvasState, resizeCanvas, resizeWebcam])
 
   //deteced face
   useEffect(() => {
@@ -425,17 +428,17 @@ export default function Drawing() {
             const canvasRect = bglayer.current.getBoundingClientRect();
             const canvasX = canvasRect.left
             const canvasY = canvasRect.top
-            const vedioScaleX = webcam.current.videoWidth / webcamRect.width
-            const vedioScaleY = webcam.current.videoHeight / webcamRect.height
+            const videoScaleX = webcam.current.videoWidth / webcamRect.width
+            const videoScaleY = webcam.current.videoHeight / webcamRect.height
             // smooth x,y
             const smoothPosition = smoothCoordinate(x, y);
             //change trackingdiv x,y
-            trackingdiv.current.style.left = smoothPosition.x / vedioScaleX + 'px'
-            trackingdiv.current.style.top = smoothPosition.y / vedioScaleY + 'px'
+            trackingdiv.current.style.left = smoothPosition.x / videoScaleX + "px"
+            trackingdiv.current.style.top = smoothPosition.y / videoScaleY + "px"
             // draw 
             if (isDraw) {
-              drawLine(((webcamX - canvasX) + (smoothPosition.x / vedioScaleX)) / (contentScale * canvasState.initialScale),
-                ((webcamY - canvasY) + (smoothPosition.y / vedioScaleY)) / (contentScale * canvasState.initialScale))
+              drawLine(((webcamX - canvasX) + (smoothPosition.x / videoScaleX)) / (contentScale * canvasState.initialScale),
+                ((webcamY - canvasY) + (smoothPosition.y / videoScaleY)) / (contentScale * canvasState.initialScale))
             } else {
               ctx.draw.beginPath();
             }
@@ -451,7 +454,7 @@ export default function Drawing() {
       };
     }
 
-  }, [ctx, model, isDraw, contentScale])
+  }, [ctx, model, isDraw, contentScale, smoothCoordinate, drawLine, canvasState.initialScale])
 
   useEffect(() => {
     let mediastream;
@@ -469,14 +472,14 @@ export default function Drawing() {
       e.preventDefault();
     };
   
-    document.addEventListener('wheel', handleWheel, { passive: false });
-    document.addEventListener('mousedown', handleMouseDown, { passive: false });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener("wheel", handleWheel, { passive: false });
+    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
   
     const cleanup = () => {
-      document.removeEventListener('wheel', handleWheel);
-      document.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener("wheel", handleWheel);
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("touchmove", handleTouchMove);
       if (mediastream){
         mediastream.getTracks().forEach(track => track.stop());
       }
@@ -503,7 +506,7 @@ export default function Drawing() {
       resizeWebcam();
   
     return cleanup;
-  }, [webcam]);
+  }, [resizeWebcam, webcam]);
   
   const colorUp = () => {
       colorNum > 0 &&setColorNum(colorNum-1)
@@ -516,9 +519,9 @@ export default function Drawing() {
 
 
   return (
-    <div className='h-screen w-screen overflow-hidden flex'>
+    <div className="h-screen w-screen overflow-hidden flex">
       {/* artboard */}
-      <div ref={scrollableDiv} className='overflow-scroll h-[100vh] w-[100vw] '>
+      <div ref={scrollableDiv} className="overflow-scroll h-[100vh] w-[100vw] ">
         {/* content */}
         <div
           onMouseDown={handleMouseDown}
@@ -535,21 +538,21 @@ export default function Drawing() {
           </canvas>
           <canvas ref={drawlayer} style={{ transform: `scale(${contentScale * canvasState.initialScale})` }}
             className={`pointer-events-none absolute ${!ctx.draw && "invisible"}`}></canvas>
-          <canvas ref={mergeCanvas} className='hidden'></canvas>
+          <canvas ref={mergeCanvas} className="hidden"></canvas>
         </div>
         {/* webcam */}
         <div className={`fixed transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 ${!ctx.draw && "hidden"}`}>
-          <video ref={webcam} className='opacity-20 h-full w-full' autoPlay ></video>
-          <div className='border-solid border-gray-500 border-2  absolute rounded-full -translate-y-1/2 -translate-x-1/2'
+          <video ref={webcam} className="opacity-20 h-full w-full" autoPlay ></video>
+          <div className="border-solid border-gray-500 border-2  absolute rounded-full -translate-y-1/2 -translate-x-1/2"
             style={{ width: `${canvasState.brushsize * contentScale * canvasState.initialScale}px`, height: `${canvasState.brushsize * contentScale * canvasState.initialScale}px`, }}
             ref={trackingdiv}></div>
         </div>
 
-        <div className={`fixed top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 ${ctx.bg && "hidden"} `}>
-          <BsPlusSquareFill className='w-[45vmin] h-[45vmin] text-gray-300' onClick={() => document.getElementById('my_modal_1').showModal()} />
-          <div className='text-gray-600 mt-2 justify-center items-center'>
-            <p className='flex text-xs'>click <BsPlusSquareFill /> to create canvas </p>
-            <p className='flex text-xs'>move mouth and press spacebar or torch <RiEdit2Line /> in phone  to draw</p>
+        <div className={`fixed top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 ${ctx.bg && "hidden"}  w-[45vmin]`}>
+          <BsPlusSquareFill className="w-full h-[45vmin] text-gray-300" onClick={() => document.getElementById("my_modal_1").showModal()} />
+          <div className="text-gray-600 mt-2 justify-center items-center ">
+            <p className="flex text-xs ">click + to create canvas 
+            move mouth and press spacebar or torch pencil in phone to draw</p>
           </div>
         </div>
       </div>
@@ -562,7 +565,7 @@ export default function Drawing() {
         <div className="modal-box shadow-[rgba(50,_50,_105,_0.10)_0px_2px_5px_0px,_rgba(0,_0,_0,_0.025)_0px_1px_1px_0px]">
           <p className="py-2">Create canvas</p>
           <div className="modal-action justify-start">
-            <form method="dialog" className='w-full' onSubmit={createCanvas} >
+            <form method="dialog" className="w-full" onSubmit={createCanvas} >
 
               <div className="mb-3">
                 <label className="mb-2 block text-xs font-semibold">Width</label>
@@ -582,9 +585,9 @@ export default function Drawing() {
                   className="block w-full rounded-md border border-secondary-400 focus:outline-none focus:ring-1 focus:ring-secondary-100 py-1 px-1.5 text-secondary-300" />
               </div>
 
-              <p className='text-xs text-red-400 py-1'>{createError}</p>
+              <p className="text-xs text-red-400 py-1">{createError}</p>
               <div className="mb-3 ">
-                <button type='submit'
+                <button type="submit"
                   className="btn mb-1.5 w-full text-center text-secondary-200 hover:bg-secondary-100 px-1 rounded-md"
                 >Create</button>
               </div>
@@ -594,7 +597,7 @@ export default function Drawing() {
       </dialog>
 
       {/* draw in phone */}
-      <div className=' fixed p-4  rounded-full left-1/2 -translate-x-1/2 bottom-10 md:hidden bg-black bg-opacity-10 text-gray-700'
+      <div className="fixed p-4  rounded-full left-1/2 -translate-x-1/2 bottom-10 md:hidden bg-black bg-opacity-10 text-gray-700"
         onTouchStart={onDraw}
         onTouchEnd={unDraw} 
         onMouseDown={onDraw}
@@ -603,11 +606,11 @@ export default function Drawing() {
         <RiEdit2Line />
       </div>
 
-      <div className='py-8 px-[5vw] fixed flex justify-between w-full space-x-[1vw]'>
+      <div className="py-8 px-[5vw] fixed flex justify-between w-full space-x-[1vw]">
 
 
-        <div className='flex space-x-[1vw]'>
-          <div className='flex space-x-[1vw] '>
+        <div className="flex space-x-[1vw]">
+          <div className="flex space-x-[1vw] ">
             <div className="flex justify-center items-center">
               <RiArrowGoBackLine onClick={undo} className={`${undoStack.length <= 1 && "text-gray-400"}`} />
             </div>
@@ -624,27 +627,27 @@ export default function Drawing() {
             <RiEraserLine />
           </div>
 
-          <div className='flex w-[50%] items-center justify-center bg-black bg-opacity-10 opacity-70  p-2 rounded-xl text-gray-700 min-w-[5rem] '>
-            <div className='flex w-full'>
+          <div className="flex w-[50%] items-center justify-center bg-black bg-opacity-10 opacity-70  p-2 rounded-xl text-gray-700 min-w-[5rem] ">
+            <div className="flex w-full">
               <input type="range" className="bush-size w-full mx-[0.5vw]" onChange={changeBrushSize} min={1} max={100} defaultValue={canvasState.brushsize} />
             </div>
 
-            <div className='w-full h-[0.875rem] overflow-hidden flex flex-row '>
+            <div className="w-full h-[0.875rem] overflow-hidden flex flex-row ">
               <div className="h-full w-[90%]" style={{ transform: `translateY(-${colorNum * 0.875}rem)` }}>
-                <div className={`h-full w-full rounded-md bg-[#ffffff] ${canvasState.color == "#ffffff" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color='#ffffff'></div>
-                <div className={`h-full w-full rounded-md bg-[#d73a49] ${canvasState.color == "#d73a49" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color='#d73a49'></div>
-                <div className={`h-full w-full rounded-md bg-[#f66a0a] ${canvasState.color == "#f66a0a" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color='#f66a0a'></div>
-                <div className={`h-full w-full rounded-md bg-[#ffd33d] ${canvasState.color == "#ffd33d" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color='#ffd33d'></div>
-                <div className={`h-full w-full rounded-md bg-[#6f42c1] ${canvasState.color == "#6f42c1" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color='#6f42c1'></div>
-                <div className={`h-full w-full rounded-md bg-[#28a745] ${canvasState.color == "#28a745" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color='#28a745'></div>
-                <div className={`h-full w-full rounded-md bg-[#0366d6] ${canvasState.color == "#0366d6" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color='#0366d6'></div>
-                <div className={`h-full w-full rounded-md bg-[#6a737d] ${canvasState.color == "#6a737d" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color='#6a737d'></div>
-                <div className={`h-full w-full rounded-md bg-[#000000] ${canvasState.color == "#000000" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color='#000000'></div>
+                <div className={`h-full w-full rounded-md bg-[#ffffff] ${canvasState.color == "#ffffff" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color="#ffffff"></div>
+                <div className={`h-full w-full rounded-md bg-[#d73a49] ${canvasState.color == "#d73a49" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color="#d73a49"></div>
+                <div className={`h-full w-full rounded-md bg-[#f66a0a] ${canvasState.color == "#f66a0a" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color="#f66a0a"></div>
+                <div className={`h-full w-full rounded-md bg-[#ffd33d] ${canvasState.color == "#ffd33d" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color="#ffd33d"></div>
+                <div className={`h-full w-full rounded-md bg-[#6f42c1] ${canvasState.color == "#6f42c1" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color="#6f42c1"></div>
+                <div className={`h-full w-full rounded-md bg-[#28a745] ${canvasState.color == "#28a745" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color="#28a745"></div>
+                <div className={`h-full w-full rounded-md bg-[#0366d6] ${canvasState.color == "#0366d6" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color="#0366d6"></div>
+                <div className={`h-full w-full rounded-md bg-[#6a737d] ${canvasState.color == "#6a737d" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color="#6a737d"></div>
+                <div className={`h-full w-full rounded-md bg-[#000000] ${canvasState.color == "#000000" ? "opacity-100" : "opacity-50"}`} onClick={changeBrushColor} color="#000000"></div>
               </div>
 
-              <div className='ml-[1%]'>
-                < RiArrowUpSLine className='text-[50%] ' onClick={colorUp}/>
-                < RiArrowDownSLine className='text-[50%]'  onClick={colorDown}/>
+              <div className="ml-[1%]">
+                < RiArrowUpSLine className="text-[50%] " onClick={colorUp}/>
+                < RiArrowDownSLine className="text-[50%]"  onClick={colorDown}/>
               </div>
             </div>
 
@@ -654,19 +657,19 @@ export default function Drawing() {
 
 
 
-        <div className='flex items-center space-x-[1vw]'>
-          <div className='bg-black bg-opacity-10  p-2 cursor-pointer rounded-xl text-gray-700 transition-all duration-200 opacity-50 hover:opacity-100' onClick={clean}>
+        <div className="flex items-center space-x-[1vw]">
+          <div className="bg-black bg-opacity-10  p-2 cursor-pointer rounded-xl text-gray-700 transition-all duration-200 opacity-50 hover:opacity-100" onClick={clean}>
             <RiDeleteBin6Line />
           </div>
-          <div className='bg-black bg-opacity-10 p-2 cursor-pointer rounded-xl text-gray-700 transition-all duration-200 opacity-50 hover:opacity-100' onClick={saveImg}>
+          <div className="bg-black bg-opacity-10 p-2 cursor-pointer rounded-xl text-gray-700 transition-all duration-200 opacity-50 hover:opacity-100" onClick={saveImg}>
             <RiInstallLine />
           </div>
         </div>
       </div>
 
       {/* when save compelete */}
-      <div className='fixed flex text-green-800 bg-green-200 bg-opacity-90 p-6 w-screen pointer-events-none opacity-0 ransition-all duration-300' ref={savePopUp}>
-        <p>save compeleted</p>
+      <div className="fixed flex text-green-800 bg-green-200 bg-opacity-90 p-6 w-screen pointer-events-none opacity-0 ransition-all duration-300 gap-x-2" ref={savePopUp}>
+        <p>save compeleted </p>
         <AiOutlineCheck />
       </div>
 

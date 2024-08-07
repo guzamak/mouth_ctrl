@@ -4,30 +4,16 @@ import { Outlet, useNavigate } from 'react-router'
 import { signOut } from '@firebase/auth'
 import { auth, db } from "../firebase-config"
 import { Link } from 'react-router-dom'
-import { getDoc, doc} from '@firebase/firestore'
 
-export default function Header() {
+export default function Header({username}) {
 
   const { user } = useContext(Authcontext)
-  const [username,setUsername] = useState()
   const navigate = useNavigate()
 
   const logout = async () => {
     await signOut(auth)
     navigate("/");
   }
-
-  useEffect(() => {
-    const getusername = async() => {
-      const username = (await getDoc(doc(db, "user", user.uid))).data().username
-      setUsername(username)
-    }
-    getusername()
-  },[user])
-
-
-  
-
 
   return (
     <>
@@ -63,7 +49,7 @@ export default function Header() {
       <div className='w-[100%] h-[1px] bg-secondary-200'></div>
     </div>
 
-      <Outlet />
+    <Outlet />
     </>
   )
 }

@@ -12,5 +12,11 @@ export default {
       }
     },
   },
+  // only light mode
+  daisyui: {
+    themes: [
+      "light",
+    ]
+  },
   plugins: [require("daisyui")],
 }
