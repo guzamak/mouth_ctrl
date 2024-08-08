@@ -69,11 +69,6 @@ export default function Drawing() {
 
 
   const drawLine = useCallback((x, y) => {
-if (undoStack.length == 0){
-setUndoStack([...undoStack,drawlayer.current.toDataURL()])
-    setRedoStack([])
-}
-else{
     !canvasState.eraser ? ctx.draw.globalCompositeOperation = "source-over" : ctx.draw.globalCompositeOperation = "destination-out"
     ctx.draw.lineWidth = canvasState.brushsize
     ctx.draw.strokeStyle = canvasState.color;
@@ -83,10 +78,7 @@ else{
     ctx.draw.beginPath();
     ctx.draw.moveTo(x, y);
     ctx.draw.globalCompositeOperation = "source-over" // change mode before save 
-setUndoStack([...undoStack,drawlayer.current.toDataURL()])
-    setRedoStack([])
-}
-  }, [ctx, canvasState, undoStack])
+  }, [ctx, canvasState])
 
   const onDraw = useCallback(() => {
     setIsDraw(true)
@@ -202,7 +194,7 @@ setUndoStack([...undoStack,drawlayer.current.toDataURL()])
       setUndoStack(newUndo);
       setRedoStack([...redoStack, lastUndo]);
       const img = new Image();
-      img.src = lastUndo;
+      img.src = newUndo[newUndo.length - 1]
       img.onload = () => {
         ctx.draw.clearRect(0, 0, drawlayer.current.width, drawlayer.current.height);
         ctx.draw.drawImage(img, 0, 0);
@@ -385,11 +377,13 @@ setUndoStack([...undoStack,drawlayer.current.toDataURL()])
       if (e.code === "Space") {
         unDraw()
         e.preventDefault()
+        setUndoStack([...undoStack,drawlayer.current.toDataURL()])
+        setRedoStack([])
       }
     }
 
-    document.addEventListener("keydown", keydown);
-    document.addEventListener("keyup", keyup);
+    document.addEventListener("keydown", keydown, { passive: false });
+    document.addEventListener("keyup", keyup, { passive: false });
 
     return () => {
       document.removeEventListener("keydown", keydown)
@@ -473,7 +467,7 @@ setUndoStack([...undoStack,drawlayer.current.toDataURL()])
     };
   
     document.addEventListener("wheel", handleWheel, { passive: false });
-    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mousedown", handleMouseDown, { passive: false });
     document.addEventListener("touchmove", handleTouchMove, { passive: false });
   
     const cleanup = () => {
@@ -514,9 +508,6 @@ setUndoStack([...undoStack,drawlayer.current.toDataURL()])
   const colorDown = () => {
       colorNum < 8 &&setColorNum(colorNum+1)
   }
-
-
-
 
   return (
     <div className="h-screen w-screen overflow-hidden flex">
@@ -653,9 +644,6 @@ setUndoStack([...undoStack,drawlayer.current.toDataURL()])
 
           </div>
         </div>
-
-
-
 
         <div className="flex items-center space-x-[1vw]">
           <div className="bg-black bg-opacity-10  p-2 cursor-pointer rounded-xl text-gray-700 transition-all duration-200 opacity-50 hover:opacity-100" onClick={clean}>
