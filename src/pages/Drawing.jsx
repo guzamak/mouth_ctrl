@@ -85,8 +85,10 @@ export default function Drawing() {
   }, [])
 
   const unDraw = useCallback(() => {
+    setUndoStack([...undoStack,drawlayer.current.toDataURL()])
+    setRedoStack([])
     setIsDraw(false)
-  }, [])
+  }, [undoStack])
 
   // paning and zoom
   const handleMouseDown = useCallback((e) => {
@@ -377,8 +379,6 @@ export default function Drawing() {
       if (e.code === "Space") {
         unDraw()
         e.preventDefault()
-        setUndoStack([...undoStack,drawlayer.current.toDataURL()])
-        setRedoStack([])
       }
     }
 
