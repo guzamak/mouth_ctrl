@@ -533,7 +533,7 @@ export default function Drawing() {
         </div>
         {/* webcam */}
         <div className={`fixed transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 ${!ctx.draw && "hidden"}`}>
-          <video ref={webcam} className="opacity-20 h-full w-full" autoPlay ></video>
+          <video ref={webcam} className="opacity-20 h-full w-full object-cover" autoPlay ></video>
           <div className="border-solid border-gray-500 border-2  absolute rounded-full -translate-y-1/2 -translate-x-1/2"
             style={{ width: `${canvasState.brushsize * contentScale * canvasState.initialScale}px`, height: `${canvasState.brushsize * contentScale * canvasState.initialScale}px`, }}
             ref={trackingdiv}></div>
