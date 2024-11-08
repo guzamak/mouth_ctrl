@@ -271,6 +271,12 @@ export default function Drawing() {
 
     const scaleX = viewportWidth / (canvasWidth + ((canvasWidth / 100) * 20));
     const scaleY = viewportHeight / (canvasHeight + ((canvasHeight / 100) * 20));
+    
+    const canvasRect = bglayer.current.getBoundingClientRect();
+      scrollableDiv.current.scrollTo(
+        canvasRect.left - ((scrollableDiv.current.offsetWidth - canvasRect.width) / 2),
+        canvasRect.top - ((scrollableDiv.current.offsetHeight - canvasRect.height) / 2)
+    );
 
 
     setCanvasState({
@@ -316,17 +322,11 @@ export default function Drawing() {
       drawctx.clearRect(0, 0, bglayer.current.width, bglayer.current.height);
       setUndoStack([...undoStack, drawlayer.current.toDataURL()])
 
-      const canvasRect = bglayer.current.getBoundingClientRect();
-      scrollableDiv.current.scrollTo(
-        canvasRect.left - ((scrollableDiv.current.offsetWidth - canvasRect.width) / 2),
-        canvasRect.top - ((scrollableDiv.current.offsetHeight - canvasRect.height) / 2)
-      );
+      resizeCanvas()
+     
      }else {
       setCreateError("please enter numbers only")
      }
-              
-      resizeCanvas()
-
     }
   }
 
