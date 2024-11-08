@@ -114,7 +114,7 @@ export default function Drawing() {
     if (viewportState.isMouseDown && !isDraw) {
       const x = e.pageX - scrollableDiv.current.offsetLeft;// endx
       const y = e.pageY - scrollableDiv.current.offsetTop;
-      const walkX = (x - viewportState.startX) * 0.5; // value (startx-endx) * speed
+      const walkX = (x - viewportState.startX) * 0.5; // value (endx-startX) * speed
       const walkY = (y - viewportState.startY) * 0.5;
       scrollableDiv.current.scrollLeft = viewportState.startScrollLeft - walkX;
       scrollableDiv.current.scrollTop = viewportState.startScrollTop - walkY;
@@ -287,14 +287,6 @@ export default function Drawing() {
   }, [canvasState])
 
 
-  const resizeWebcam = useCallback(() => {
-    const widthInPer = Math.round(((scrollableDiv.current.offsetWidth / window.innerWidth) / 2) * 100)
-    const heightInPer = Math.round(((scrollableDiv.current.offsetHeight / window.innerHeight) / 2) * 100)
-    webcam.current.parentNode.style.left = `${widthInPer}%`
-    webcam.current.parentNode.style.top = `${heightInPer}%`
-  }, [scrollableDiv])
-
-
   const createCanvas = useCallback((e) => {
     e.preventDefault()
     if (!ctx.bg && !ctx.draw) {
@@ -395,13 +387,12 @@ export default function Drawing() {
   useEffect(() => {
 
     window.addEventListener("resize", resizeCanvas)
-    window.addEventListener("resize", resizeWebcam)
 
     return () => {
       window.removeEventListener("resize", resizeCanvas)
     }
 
-  }, [canvasState, resizeCanvas, resizeWebcam])
+  }, [canvasState, resizeCanvas])
 
   //deteced face
   useEffect(() => {
@@ -497,10 +488,10 @@ export default function Drawing() {
         setModel(model);
       });
     
-      resizeWebcam();
+
   
     return cleanup;
-  }, [resizeWebcam, webcam]);
+  }, [ webcam]);
   
   const colorUp = () => {
       colorNum > 0 &&setColorNum(colorNum-1)
@@ -532,7 +523,7 @@ export default function Drawing() {
           <canvas ref={mergeCanvas} className="hidden"></canvas>
         </div>
         {/* webcam */}
-        <div className={`fixed transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 ${!ctx.draw && "hidden"}`}>
+        <div className={`fixed transform -translate-x-1/2 -translate-y-1/2 pointer-events-none  z-10 ${!ctx.draw && "hidden"} left-1/2 top-1/2`}>
           <video ref={webcam} className="opacity-20 h-full w-full object-cover" autoPlay ></video>
           <div className="border-solid border-gray-500 border-2  absolute rounded-full -translate-y-1/2 -translate-x-1/2"
             style={{ width: `${canvasState.brushsize * contentScale * canvasState.initialScale}px`, height: `${canvasState.brushsize * contentScale * canvasState.initialScale}px`, }}
