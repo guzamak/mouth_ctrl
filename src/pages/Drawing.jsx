@@ -269,24 +269,23 @@ export default function Drawing() {
     const canvasHeight = bglayer.current.height;
     const viewportWidth = scrollableDiv.current.offsetWidth;
     const viewportHeight = scrollableDiv.current.offsetHeight;
-    scrollableDiv.current.scrollTo(
-      canvasRect.left + scrollableDiv.current.scrollLeft - ((viewportWidth - canvasRect.width) / 2),
-      canvasRect.top + scrollableDiv.current.scrollTop - ((viewportHeight - canvasRect.height) / 2)
-    );
-
+    
     const scaleX = viewportWidth / (canvasWidth + ((canvasWidth / 100) * 20));
     const scaleY = viewportHeight / (canvasHeight + ((canvasHeight / 100) * 20));
-
+    
     setCanvasState({
       ...canvasState,
       initialScale: Math.min(scaleX, scaleY),
     })
+    // scroll not set to zero when it resize need  scrollableDiv.current.scrollLeft scrollableDiv.current.scrollTop to find started point
+    scrollableDiv.current.scrollTo(
+      canvasRect.left + scrollableDiv.current.scrollLeft - ((viewportWidth - canvasRect.width) / 2),
+      canvasRect.top + scrollableDiv.current.scrollTop - ((viewportHeight - canvasRect.height) / 2)
+    );
     setIsDraw(false)
 
   }, [canvasState])
 
-  useEffect(() => {
-  },[canvasState.initialScale])
 
   const resizeWebcam = useCallback(() => {
     const widthInPer = Math.round(((scrollableDiv.current.offsetWidth / window.innerWidth) / 2) * 100)
