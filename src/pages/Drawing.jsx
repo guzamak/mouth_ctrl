@@ -264,20 +264,18 @@ export default function Drawing() {
 
   const resizeCanvas = useCallback(() => {
 
+    const canvasRect = bglayer.current.getBoundingClientRect();
     const canvasWidth = bglayer.current.width;
     const canvasHeight = bglayer.current.height;
     const viewportWidth = scrollableDiv.current.offsetWidth;
     const viewportHeight = scrollableDiv.current.offsetHeight;
+    scrollableDiv.current.scrollTo(
+      canvasRect.left + scrollableDiv.current.scrollLeft - ((viewportWidth - canvasRect.width) / 2),
+      canvasRect.top + scrollableDiv.current.scrollTop - ((viewportHeight - canvasRect.height) / 2)
+    );
 
     const scaleX = viewportWidth / (canvasWidth + ((canvasWidth / 100) * 20));
     const scaleY = viewportHeight / (canvasHeight + ((canvasHeight / 100) * 20));
-    
-    const canvasRect = bglayer.current.getBoundingClientRect();
-      scrollableDiv.current.scrollTo(
-        canvasRect.left - ((scrollableDiv.current.offsetWidth - canvasRect.width) / 2),
-        canvasRect.top - ((scrollableDiv.current.offsetHeight - canvasRect.height) / 2)
-    );
-
 
     setCanvasState({
       ...canvasState,
@@ -287,6 +285,9 @@ export default function Drawing() {
 
   }, [canvasState])
 
+  useEffect(() => {
+  },[canvasState.initialScale])
+
   const resizeWebcam = useCallback(() => {
     const widthInPer = Math.round(((scrollableDiv.current.offsetWidth / window.innerWidth) / 2) * 100)
     const heightInPer = Math.round(((scrollableDiv.current.offsetHeight / window.innerHeight) / 2) * 100)
@@ -295,7 +296,7 @@ export default function Drawing() {
   }, [scrollableDiv])
 
 
-  const createCanvas = (e) => {
+  const createCanvas = useCallback((e) => {
     e.preventDefault()
     if (!ctx.bg && !ctx.draw) {
       scrollableDiv.current.scrollTo(0,0)
@@ -322,13 +323,13 @@ export default function Drawing() {
       drawctx.clearRect(0, 0, bglayer.current.width, bglayer.current.height);
       setUndoStack([...undoStack, drawlayer.current.toDataURL()])
 
-      resizeCanvas()
-     
-     }else {
+      
+    }else {
       setCreateError("please enter numbers only")
-     }
     }
-  }
+    resizeCanvas()
+    }
+  },[ctx])
 
   const saveImg = useCallback(() => {
 
